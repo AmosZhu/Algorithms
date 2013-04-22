@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-
-using namespace std;
+#include <iterator>
 
 typedef struct _result
 {
@@ -13,12 +12,12 @@ typedef struct _result
 
 int EUCLID(int a,int b);
 LINEAR_RES EXTENDED_EUCLID(int a,int b);
-vetor<int> Modular_Linear_Equation_Solver(int a,int b,int n);
-static void Print_result(vector<int> res)
+std::vector<int> Modular_Linear_Equation_Solver(int a,int b,int n);
+static void Print_result(std::vector<int> res)
 {
-    for(vector<int>::iterator iter=res.begin(); iter!=res.end(); iter++)
+    printf("result\n");
+    for(std::vector<int>::iterator iter=res.begin(); iter!=res.end(); iter++)
     {
-        printf("result\n")
         printf("x=%d, ",*iter);
     }
 
@@ -41,7 +40,7 @@ int main(void)
     Print_EUCLID(res);
 #endif /* Modify by Amos.zhu */
 
-    vector<int> res;
+    std::vector<int> res;
     res=Modular_Linear_Equation_Solver(4,8,12);
     Print_result(res);
     return 1;
@@ -76,21 +75,22 @@ LINEAR_RES EXTENDED_EUCLID(int a, int b)
     return res;
 }
 
-vetor<int> Modular_Linear_Equation_Solver(int a,int b,int n)
+std::vector<int> Modular_Linear_Equation_Solver(int a,int b,int n)
 {
-    vector<int> res;
+    std::vector<int> res;
     LINEAR_RES Linear_res;
     int i;
     int x0,xi;
     Linear_res=EXTENDED_EUCLID(a,n);
-    if(b%Linear_res==0)
+    Print_EUCLID(Linear_res);
+    if(b%Linear_res.d==0)
     {
-        x0=Linear_res.x*(b/Linear_res.d)%n
-           res.push_back(x0);
-        for(i=0; i<Linear_res.d; i++)
+        x0=Linear_res.x*(b/Linear_res.d)%n; //x0=x'*(b/d) mod n
+        res.push_back(x0);
+        for(i=1; i<Linear_res.d; i++)
         {
-            xi=x0+i*(n/Linear_res.d);
-            res.push_back(x0);
+            xi=x0+i*(n/Linear_res.d);       //xi=x0+i(n/d)  i from 1 to d-1
+            res.push_back(xi);
         }
     }
 
