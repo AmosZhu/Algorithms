@@ -13,7 +13,7 @@ public:
     void deleteNode(const elemType& item);
 
 private:
-    void deleteFromTree(nodeType<elemType>* p);
+    void deleteFromTree(nodeType<elemType>* &p);
 };
 
 
@@ -88,10 +88,12 @@ void bSearchTreeType<elemType>::deleteNode(const elemType& item)
 {
     bool found=false;
     nodeType<elemType>* current;
+    nodeType<elemType>* tailNode;
 
     if(root!=NULL)
     {
         current=root;
+        tailNode=NULL;
         while(current!=NULL&&found==false)
         {
             if(current->info==item)
@@ -99,6 +101,7 @@ void bSearchTreeType<elemType>::deleteNode(const elemType& item)
                 found=true;
                 continue;
             }
+            tailNode=current;
             if(current->info>item)
                 current=current->lLink;
             else
@@ -111,17 +114,26 @@ void bSearchTreeType<elemType>::deleteNode(const elemType& item)
         }
         else
         {
-            if(found)
+            if(tailNode!=NULL)
             {
-                deleteFromTree(current);
+                if(found)
+                {
+                    std::cout<<tailNode->info<<std::endl;
+                    if(tailNode->info>item)
+                        deleteFromTree(tailNode->lLink);
+                    else
+                        deleteFromTree(tailNode->rLink);
+                }
             }
+            else
+                deleteFromTree(root);
         }
     }
 
 }
 
 template<typename elemType>
-void bSearchTreeType<elemType>::deleteFromTree(nodeType<elemType>* p)
+void bSearchTreeType<elemType>::deleteFromTree(nodeType<elemType>* &p)
 {
     nodeType<elemType>* temp;
     nodeType<elemType>* tailNode;
@@ -132,7 +144,8 @@ void bSearchTreeType<elemType>::deleteFromTree(nodeType<elemType>* p)
 
     if(p->rLink==NULL&&p->lLink==NULL)
     {
-        delete p;
+        temp=p;
+        delete temp;
         p=NULL;
     }
     else if(p->rLink==NULL)
