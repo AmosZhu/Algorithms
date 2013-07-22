@@ -1,6 +1,6 @@
 #ifndef _BINARY_TREE_H
 #define _BINARY_TREE_H
-
+//Amos.zhu
 #include <iostream>
 
 template<typename elemType>
