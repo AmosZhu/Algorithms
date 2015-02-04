@@ -120,11 +120,19 @@ void CNeedlemanWunsch::BestScore()
                     maxScore=m_scoreMatrix[i-1][j].value+m_penalty;
                     direction=TOP;
                 }
+                else if(maxScore==(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    direction|=TOP;
+                }
 
                 if(maxScore<(m_scoreMatrix[i][j-1].value+m_penalty))
                 {
                     maxScore=m_scoreMatrix[i][j-1].value+m_penalty;
                     direction=LEFT;
+                }
+                else if(maxScore==(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    direction|=LEFT;
                 }
 
                 m_scoreMatrix[i][j].value=maxScore;
@@ -151,8 +159,103 @@ void CNeedlemanWunsch::PrintOut(void)
         }
         std::cout<<"|"<<std::endl;
     }
+
+    i=lenX;
+    j=lenY;
+    bestSubSequence(i,j,"","");
+#if 0
+    while(i+j>0)
+    {
+        if(m_scoreMatrix[i][j].direction==DIAGONAL)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime=m_sequenceY.at(j-1)+yPrime;
+            i--;
+            j--;
+        }
+        else if(m_scoreMatrix[i][j].direction==TOP)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime="-"+yPrime;
+            i--;
+        }
+        else if(m_scoreMatrix[i][j].direction==LEFT)
+        {
+            xPrime="-"+xPrime;
+            yPrime=m_sequenceY.at(j-1)+yPrime;
+            j--;
+        }
+    }
+    std::cout<<"Best alignment: "<<std::endl;
+    std::cout<<"X: "<<xPrime<<std::endl;
+    std::cout<<"Y: "<<yPrime<<std::endl;
+#endif /* Modify by Amos.zhu */
+
 }
 
+void CNeedlemanWunsch::bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix)
+{
+    std::string xPrime=xSuffix;
+    std::string yPrime=ySuffix;
+
+    int count=0;
+    int direction;
+    int x,y;
+
+    while(i+j>0)
+    {
+        count=0;
+        direction=m_scoreMatrix[i][j].direction;
+        x=i;
+        y=j;
+        xSuffix=xPrime;
+        ySuffix=yPrime;
+        if(direction&DIAGONAL)
+        {
+            count++;
+            xPrime=m_sequenceX.at(i-1)+xSuffix;
+            yPrime=m_sequenceY.at(j-1)+ySuffix;
+            i--;
+            j--;
+        }
+
+        if(direction&TOP)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x-1,y,m_sequenceX.at(x-1)+xSuffix,"-"+ySuffix);
+            }
+            else
+            {
+                xPrime=m_sequenceX.at(i-1)+xSuffix;
+                yPrime="-"+ySuffix;
+                i--;
+            }
+
+        }
+
+        if(direction&LEFT)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x,y-1,"-"+xSuffix,m_sequenceY.at(y-1)+ySuffix);
+            }
+            else
+            {
+                xPrime="-"+xSuffix;
+                yPrime=m_sequenceY.at(j-1)+ySuffix;
+                j--;
+            }
+        }
+    }
+
+    std::cout<<"Best alignment: "<<std::endl;
+    std::cout<<"X: "<<xPrime<<std::endl;
+    std::cout<<"Y: "<<yPrime<<std::endl;
+
+}
 
 int CNeedlemanWunsch::scoreBLOSUM50(int i,int j)
 {
@@ -176,11 +279,11 @@ int CNeedlemanWunsch::scoreBLOSUM50(int i,int j)
 
     int nColumn;
     nColumn = sqlite3_column_count(res);
-    printf("column=%d\n",nColumn);
+    //printf("column=%d\n",nColumn);
     while(sqlite3_step(res)==SQLITE_ROW)
     {
         score=sqlite3_column_int(res,0);
-        printf("%s score is %d\n",sqlStatement,score);
+        //printf("%s score is %d\n",sqlStatement,score);
     }
 
     return score;

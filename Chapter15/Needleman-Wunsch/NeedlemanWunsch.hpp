@@ -5,9 +5,9 @@
 #include <map>
 #include <sqlite3.h>
 
-#define LEFT 0
-#define TOP 1
-#define DIAGONAL 2
+#define LEFT 0x00000001
+#define TOP 0x00000002
+#define DIAGONAL 0x00000004
 
 struct matrixNode_t
 {
@@ -29,6 +29,7 @@ public:
 
 private:
     int scoreBLOSUM50(int i,int j);
+    void bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
 
 private:
         sqlite3* m_database;
