@@ -81,7 +81,7 @@ void CNeedlemanWunsch::SetPenalty(int penalty)
     m_penalty=penalty;
 }
 
-void CNeedlemanWunsch::BestScore()
+void CNeedlemanWunsch::GlobalAlignment()
 {
     int i,j;
     int lenX,lenY;
@@ -98,7 +98,7 @@ void CNeedlemanWunsch::BestScore()
             if(i==0&&j==0)
             {
                 m_scoreMatrix[0][0].value=0;
-                m_scoreMatrix[0][j].direction=-1;
+                m_scoreMatrix[0][0].direction=STOP;
             }
             else if(i==0&&j!=0)
             {
@@ -143,7 +143,100 @@ void CNeedlemanWunsch::BestScore()
     }
 }
 
-void CNeedlemanWunsch::PrintOut(void)
+void CNeedlemanWunsch::RepeatAlignment(int threshold)
+{
+    int i,j;
+    int lenX,lenY;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    int maxScore;
+    int maxScoreInLine;
+    int direction;
+
+    m_threshold=threshold;
+    maxScoreInLine=0;
+
+    /*
+    *   Init the first row
+    */
+    for(j=0; j<=lenY; j++)
+    {
+        m_scoreMatrix[0][j].value=0;
+        m_scoreMatrix[0][j].direction=STOP;
+    }
+
+    for(i=1; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            if(j==0)
+            {
+                if((maxScoreInLine-threshold)>m_scoreMatrix[i-1][0].value)
+                {
+                    m_scoreMatrix[i][0].value=maxScoreInLine-threshold;
+                }
+                else
+                {
+                    m_scoreMatrix[i][0].value=m_scoreMatrix[i-1][0].value;
+                }
+                m_scoreMatrix[i][0].direction=STOP;
+                maxScoreInLine=m_scoreMatrix[i][0].value;
+            }
+            else
+            {
+                maxScore=m_scoreMatrix[i-1][j-1].value+scoreBLOSUM50(i,j);
+                direction=DIAGONAL;
+
+                if(maxScore<(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i-1][j].value+m_penalty;
+                    direction=TOP;
+                }
+                else if(maxScore==(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    direction|=TOP;
+                }
+
+                if(maxScore<(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i][j-1].value+m_penalty;
+                    direction=LEFT;
+                }
+                else if(maxScore==(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    direction|=LEFT;
+                }
+
+                if(maxScore<m_scoreMatrix[i][0].value)
+                {
+                    maxScore=m_scoreMatrix[i][0].value;
+                    direction=STOP;
+                }
+
+                if(maxScoreInLine<maxScore)
+                {
+                    maxScoreInLine=maxScore;
+                }
+
+                m_scoreMatrix[i][j].value=maxScore;
+                m_scoreMatrix[i][j].direction=direction;
+            }
+        }
+    }
+
+    if((maxScoreInLine-threshold)>m_scoreMatrix[i-1][0].value)
+    {
+        m_rpScore=maxScoreInLine-threshold;
+    }
+    else
+    {
+        m_rpScore=m_scoreMatrix[i-1][0].value;
+    }
+
+}
+
+
+void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
 {
     int i,j;
     int lenX,lenY;
@@ -192,6 +285,94 @@ void CNeedlemanWunsch::PrintOut(void)
 #endif /* Modify by Amos.zhu */
 
 }
+
+void CNeedlemanWunsch::RepeatAlignmentPrintOut(void)
+{
+    int i,j;
+    int lenX,lenY;
+    std::string xPrime;
+    std::string yPrime;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    int entryVal;
+    bool isFound;
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            std::cout<<"|"<<std::setw(5)<<m_scoreMatrix[i][j].value;
+        }
+        std::cout<<"|"<<std::endl;
+    }
+
+    i=lenX;
+    j=0;
+    printf("best score=%d,m_thredshold=%d\n",entryVal,m_threshold);
+    while(i>0)
+    {
+        if(j==0)
+        {
+            if(i==lenX)
+            {
+                entryVal=m_rpScore;
+            }
+            else
+            {
+                entryVal=m_scoreMatrix[i+1][0].value;
+            }
+            isFound=false;
+            for(j=1; j<=lenY&&!isFound; j++)
+            {
+                if(m_scoreMatrix[i][j].value==(entryVal+m_threshold))
+                {
+                    isFound=true;
+                    break;
+                }
+            }
+        }
+
+        if(!isFound)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime="."+yPrime;
+            i--;
+            j=0;
+            continue;
+        }
+
+        if(m_scoreMatrix[i][j].direction&DIAGONAL)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime=m_sequenceY.at(j-1)+yPrime;
+            i--;
+            j--;
+        }
+        else if(m_scoreMatrix[i][j].direction&TOP)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime="-"+yPrime;
+            i--;
+        }
+        else if(m_scoreMatrix[i][j].direction&LEFT)
+        {
+            xPrime="-"+xPrime;
+            yPrime=m_sequenceY.at(j-1)+yPrime;
+            j--;
+        }
+        else if(m_scoreMatrix[i][j].direction==STOP)
+        {
+            xPrime=m_sequenceX.at(i-1)+xPrime;
+            yPrime="."+yPrime;
+            if(--j==0)
+                i--;
+        }
+    }
+    std::cout<<"Repeat alignment: "<<std::endl;
+    std::cout<<"X: "<<xPrime<<std::endl;
+    std::cout<<"Y: "<<yPrime<<std::endl;
+
+}
+
 
 void CNeedlemanWunsch::bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix)
 {
