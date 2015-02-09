@@ -235,7 +235,6 @@ void CNeedlemanWunsch::RepeatAlignment(int threshold)
 
 }
 
-
 void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
 {
     int i,j;
@@ -373,6 +372,113 @@ void CNeedlemanWunsch::RepeatAlignmentPrintOut(void)
 
 }
 
+void CNeedlemanWunsch::OverlapAlignment()
+{
+    int i,j;
+    int lenX,lenY;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    int maxScore;
+    int direction;
+
+
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            if(i==0&&j==0)
+            {
+                m_scoreMatrix[0][0].value=0;
+                m_scoreMatrix[0][0].direction=STOP;
+            }
+            else if(i==0&&j!=0)
+            {
+                m_scoreMatrix[0][j].value=0;
+                m_scoreMatrix[0][j].direction=STOP;
+            }
+            else if(i!=0&&j==0)
+            {
+                m_scoreMatrix[i][0].value=0;
+                m_scoreMatrix[i][0].direction=STOP;
+            }
+            else
+            {
+                maxScore=m_scoreMatrix[i-1][j-1].value+scoreBLOSUM50(i,j);
+                direction=DIAGONAL;
+
+                if(maxScore<(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i-1][j].value+m_penalty;
+                    direction=TOP;
+                }
+                else if(maxScore==(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    direction|=TOP;
+                }
+
+                if(maxScore<(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i][j-1].value+m_penalty;
+                    direction=LEFT;
+                }
+                else if(maxScore==(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    direction|=LEFT;
+                }
+
+                m_scoreMatrix[i][j].value=maxScore;
+                m_scoreMatrix[i][j].direction=direction;
+            }
+
+        }
+    }
+
+}
+
+void CNeedlemanWunsch::OverlapAlignmentPrintOut(void)
+{
+    int i,j;
+    int lenX,lenY;
+    std::string xPrime;
+    std::string yPrime;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    int posX=0,posY=0;
+    int maxVal;
+    maxVal=m_scoreMatrix[0][0].value;
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            std::cout<<"|"<<std::setw(5)<<m_scoreMatrix[i][j].value;
+        }
+        std::cout<<"|"<<std::endl;
+    }
+
+    for(i=1; i<=lenX; i++)
+    {
+        if(m_scoreMatrix[i][lenY].value>maxVal)
+        {
+            posX=i;
+            posY=lenY;
+            maxVal=m_scoreMatrix[i][lenY].value;
+        }
+    }
+
+    for(j=1; j<=lenY; j++)
+    {
+        if(m_scoreMatrix[lenX][j].value>maxVal)
+        {
+            posX=lenX;
+            posY=j;
+            maxVal=m_scoreMatrix[lenX][j].value;
+        }
+    }
+
+    printf("%d,%d,maxVal=%d\n",posX,posY,maxVal);
+
+    overlapSubSequence(posX,posY,"","");
+}
 
 void CNeedlemanWunsch::bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix)
 {
@@ -436,6 +542,69 @@ void CNeedlemanWunsch::bestSubSequence(int i,int j,std::string xSuffix,std::stri
     std::cout<<"X: "<<xPrime<<std::endl;
     std::cout<<"Y: "<<yPrime<<std::endl;
 
+}
+
+void CNeedlemanWunsch::overlapSubSequence(int i,int j,std::string xSuffix,std::string ySuffix)
+{
+    std::string xPrime=xSuffix;
+    std::string yPrime=ySuffix;
+
+    int count=0;
+    int direction;
+    int x,y;
+
+    while(j>0&&i>0)
+    {
+        count=0;
+        direction=m_scoreMatrix[i][j].direction;
+        x=i;
+        y=j;
+        xSuffix=xPrime;
+        ySuffix=yPrime;
+        if(direction&DIAGONAL)
+        {
+            count++;
+            xPrime=m_sequenceX.at(i-1)+xSuffix;
+            yPrime=m_sequenceY.at(j-1)+ySuffix;
+            i--;
+            j--;
+        }
+
+        if(direction&TOP)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x-1,y,m_sequenceX.at(x-1)+xSuffix,"-"+ySuffix);
+            }
+            else
+            {
+                xPrime=m_sequenceX.at(i-1)+xSuffix;
+                yPrime="-"+ySuffix;
+                i--;
+            }
+
+        }
+
+        if(direction&LEFT)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x,y-1,"-"+xSuffix,m_sequenceY.at(y-1)+ySuffix);
+            }
+            else
+            {
+                xPrime="-"+xSuffix;
+                yPrime=m_sequenceY.at(j-1)+ySuffix;
+                j--;
+            }
+        }
+    }
+
+    std::cout<<"Best alignment: "<<std::endl;
+    std::cout<<"X: "<<xPrime<<std::endl;
+    std::cout<<"Y: "<<yPrime<<std::endl;
 }
 
 int CNeedlemanWunsch::scoreBLOSUM50(int i,int j)

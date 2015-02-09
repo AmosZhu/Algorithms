@@ -28,10 +28,13 @@ public:
     void GlobalAlignmentPrintOut(void);
     void RepeatAlignment(int threshold);
     void RepeatAlignmentPrintOut(void);
+    void OverlapAlignment(void);
+    void OverlapAlignmentPrintOut(void);
 
 private:
     int scoreBLOSUM50(int i,int j);
     void bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
+        void overlapSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
 
 private:
     sqlite3* m_database;
