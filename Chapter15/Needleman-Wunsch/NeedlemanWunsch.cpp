@@ -243,6 +243,7 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
     std::string yPrime;
     lenX=m_sequenceX.length();
     lenY=m_sequenceY.length();
+    std::string direction;
     for(i=0; i<=lenX; i++)
     {
         for(j=0; j<=lenY; j++)
@@ -251,6 +252,31 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
         }
         std::cout<<"|"<<std::endl;
     }
+
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            direction="";
+            if(m_scoreMatrix[i][j].direction&TOP)
+            {
+                direction="T";
+            }
+
+            if(m_scoreMatrix[i][j].direction&DIAGONAL)
+            {
+                direction+="D";
+            }
+
+            if(m_scoreMatrix[i][j].direction&LEFT)
+            {
+                direction+="L";
+            }
+            std::cout<<"|"<<std::setw(5)<<direction;
+        }
+        std::cout<<"|"<<std::endl;
+    }
+
 
     i=lenX;
     j=lenY;
