@@ -34,7 +34,7 @@ public:
 private:
     int scoreBLOSUM50(int i,int j);
     void bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
-        void overlapSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
+    void overlapSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
 
 private:
     sqlite3* m_database;
