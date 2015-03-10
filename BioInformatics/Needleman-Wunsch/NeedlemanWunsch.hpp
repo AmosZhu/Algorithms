@@ -26,6 +26,8 @@ public:
     void SetPenalty(int penalty);
     void GlobalAlignment(void);
     void GlobalAlignmentPrintOut(void);
+    void LocalAlignment(void);
+    void LocalAlignmentPrintOut(void);
     void RepeatAlignment(int threshold);
     void RepeatAlignmentPrintOut(void);
     void OverlapAlignment(void);
@@ -35,6 +37,7 @@ private:
     int scoreBLOSUM50(int i,int j);
     void bestSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
     void overlapSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
+    void localSubSequence(int i,int j,std::string xSuffix,std::string ySuffix);
 
 private:
     sqlite3* m_database;

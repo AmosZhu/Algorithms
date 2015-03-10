@@ -28,8 +28,9 @@ int main(int argc,char* argv[])
     while(!qFlag)
     {
         std::cout<<"1.Global Alignment"<<std::endl;
-        std::cout<<"2.Repeat Alignment"<<std::endl;
-        std::cout<<"3.Overlap Alignment"<<std::endl;
+        std::cout<<"2.Local Alignment"<<std::endl;
+        std::cout<<"3.Repeat Alignment"<<std::endl;
+        std::cout<<"4.Overlap Alignment"<<std::endl;
         std::cout<<"9.Quit"<<std::endl;
 
         std::cout<<"Your Selection>>";
@@ -60,11 +61,23 @@ int main(int argc,char* argv[])
                 std::cin>>ySequence;
                 CNeedlemanWunsch needleman(xSequence,ySequence);
                 needleman.SetPenalty(-8);
+                needleman.LocalAlignment();
+                needleman.LocalAlignmentPrintOut();
+            }
+            break;
+            case 3:
+            {
+                std::cout<<"Enter x sequence: ";
+                std::cin>>xSequence;
+                std::cout<<"Enter y sequence: ";
+                std::cin>>ySequence;
+                CNeedlemanWunsch needleman(xSequence,ySequence);
+                needleman.SetPenalty(-8);
                 needleman.RepeatAlignment(20);
                 needleman.RepeatAlignmentPrintOut();
             }
             break;
-            case 3:
+            case 4:
             {
                 std::cout<<"Enter x sequence: ";
                 std::cin>>xSequence;

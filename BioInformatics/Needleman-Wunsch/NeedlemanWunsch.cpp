@@ -143,6 +143,74 @@ void CNeedlemanWunsch::GlobalAlignment()
     }
 }
 
+void CNeedlemanWunsch::LocalAlignment(void)
+{
+    int i,j;
+    int lenX,lenY;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    int maxScore;
+    int direction;
+
+
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            if(i==0&&j==0)
+            {
+                m_scoreMatrix[0][0].value=0;
+                m_scoreMatrix[0][0].direction=STOP;
+            }
+            else if(i==0&&j!=0)
+            {
+                m_scoreMatrix[0][j].value=0;
+                m_scoreMatrix[0][j].direction=STOP;
+            }
+            else if(i!=0&&j==0)
+            {
+                m_scoreMatrix[i][0].value=0;
+                m_scoreMatrix[i][0].direction=STOP;
+            }
+            else
+            {
+                maxScore=m_scoreMatrix[i-1][j-1].value+scoreBLOSUM50(i,j);
+                direction=DIAGONAL;
+
+                if(maxScore<(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i-1][j].value+m_penalty;
+                    direction=TOP;
+                }
+                else if(maxScore==(m_scoreMatrix[i-1][j].value+m_penalty))
+                {
+                    direction|=TOP;
+                }
+
+                if(maxScore<(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    maxScore=m_scoreMatrix[i][j-1].value+m_penalty;
+                    direction=LEFT;
+                }
+                else if(maxScore==(m_scoreMatrix[i][j-1].value+m_penalty))
+                {
+                    direction|=LEFT;
+                }
+
+                if(maxScore<0)
+                {
+                    maxScore=0;
+                    direction=STOP;
+                }
+
+                m_scoreMatrix[i][j].value=maxScore;
+                m_scoreMatrix[i][j].direction=direction;
+            }
+
+        }
+    }
+}
+
 void CNeedlemanWunsch::RepeatAlignment(int threshold)
 {
     int i,j;
@@ -244,6 +312,7 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
     lenX=m_sequenceX.length();
     lenY=m_sequenceY.length();
     std::string direction;
+    std::cout<<"Score Matrix: "<<std::endl;
     for(i=0; i<=lenX; i++)
     {
         for(j=0; j<=lenY; j++)
@@ -253,6 +322,7 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
         std::cout<<"|"<<std::endl;
     }
 
+    std::cout<<"TraceBack Matrix: "<<std::endl;
     for(i=0; i<=lenX; i++)
     {
         for(j=0; j<=lenY; j++)
@@ -271,6 +341,11 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
             if(m_scoreMatrix[i][j].direction&LEFT)
             {
                 direction+="L";
+            }
+
+            if(m_scoreMatrix[i][j].direction==STOP)
+            {
+                direction="S";
             }
             std::cout<<"|"<<std::setw(5)<<direction;
         }
@@ -308,6 +383,69 @@ void CNeedlemanWunsch::GlobalAlignmentPrintOut(void)
     std::cout<<"X: "<<xPrime<<std::endl;
     std::cout<<"Y: "<<yPrime<<std::endl;
 #endif /* Modify by Amos.zhu */
+
+}
+
+void CNeedlemanWunsch::LocalAlignmentPrintOut(void)
+{
+    int i,j;
+    int lenX,lenY;
+    std::string xPrime;
+    std::string yPrime;
+    lenX=m_sequenceX.length();
+    lenY=m_sequenceY.length();
+    std::string direction;
+    std::cout<<"Score Matrix: "<<std::endl;
+
+    int maxScore=0;
+    int posMX=0,posMY=0;
+
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            std::cout<<"|"<<std::setw(5)<<m_scoreMatrix[i][j].value;
+            if(m_scoreMatrix[i][j].value>maxScore)
+            {
+                maxScore=m_scoreMatrix[i][j].value;
+                posMX=i;
+                posMY=j;
+            }
+        }
+        std::cout<<"|"<<std::endl;
+    }
+
+    std::cout<<"TraceBack Matrix: "<<std::endl;
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            direction="";
+            if(m_scoreMatrix[i][j].direction&TOP)
+            {
+                direction="T";
+            }
+
+            if(m_scoreMatrix[i][j].direction&DIAGONAL)
+            {
+                direction+="D";
+            }
+
+            if(m_scoreMatrix[i][j].direction&LEFT)
+            {
+                direction+="L";
+            }
+            if(m_scoreMatrix[i][j].direction==STOP)
+            {
+                direction="S";
+            }
+
+            std::cout<<"|"<<std::setw(5)<<direction;
+        }
+        std::cout<<"|"<<std::endl;
+    }
+
+    localSubSequence(posMX,posMY,"","");
 
 }
 
@@ -631,6 +769,72 @@ void CNeedlemanWunsch::overlapSubSequence(int i,int j,std::string xSuffix,std::s
     std::cout<<"Best alignment: "<<std::endl;
     std::cout<<"X: "<<xPrime<<std::endl;
     std::cout<<"Y: "<<yPrime<<std::endl;
+}
+
+void CNeedlemanWunsch::localSubSequence(int i,int j,std::string xSuffix,std::string ySuffix)
+{
+    std::string xPrime=xSuffix;
+    std::string yPrime=ySuffix;
+
+    int count=0;
+    int direction;
+    int x,y;
+
+    direction=m_scoreMatrix[i][j].direction;
+
+    while(direction!=STOP)
+    {
+        count=0;
+        direction=m_scoreMatrix[i][j].direction;
+        x=i;
+        y=j;
+        xSuffix=xPrime;
+        ySuffix=yPrime;
+        if(direction&DIAGONAL)
+        {
+            count++;
+            xPrime=m_sequenceX.at(i-1)+xSuffix;
+            yPrime=m_sequenceY.at(j-1)+ySuffix;
+            i--;
+            j--;
+        }
+
+        if(direction&TOP)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x-1,y,m_sequenceX.at(x-1)+xSuffix,"-"+ySuffix);
+            }
+            else
+            {
+                xPrime=m_sequenceX.at(i-1)+xSuffix;
+                yPrime="-"+ySuffix;
+                i--;
+            }
+
+        }
+
+        if(direction&LEFT)
+        {
+            count++;
+            if(count>=2)
+            {
+                bestSubSequence(x,y-1,"-"+xSuffix,m_sequenceY.at(y-1)+ySuffix);
+            }
+            else
+            {
+                xPrime="-"+xSuffix;
+                yPrime=m_sequenceY.at(j-1)+ySuffix;
+                j--;
+            }
+        }
+    }
+
+    std::cout<<"Best alignment: "<<std::endl;
+    std::cout<<"X: "<<xPrime<<std::endl;
+    std::cout<<"Y: "<<yPrime<<std::endl;
+
 }
 
 int CNeedlemanWunsch::scoreBLOSUM50(int i,int j)
