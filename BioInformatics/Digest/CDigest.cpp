@@ -54,7 +54,7 @@ void CDigest::DoPartialDigest(void)
         return;
     }
 
-    std::cout<<m_setL<<std::endl;
+    //std::cout<<m_setL<<std::endl;
 
     auto it=m_setL.end();
     it--;
@@ -80,7 +80,7 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
     std::multiset<int> tempSet;
     if(L->empty())
     {
-        std::cout<<"Result: "<<*X<<std::endl;
+        std::cout<<"Result: \n"<<*X<<std::endl;
         return;
     }
 
