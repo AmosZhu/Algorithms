@@ -197,7 +197,7 @@ void CNeedlemanWunsch::LocalAlignment(void)
                     direction|=LEFT;
                 }
 
-                if(maxScore<0)
+                if(maxScore<=0)
                 {
                     maxScore=0;
                     direction=STOP;
@@ -445,7 +445,22 @@ void CNeedlemanWunsch::LocalAlignmentPrintOut(void)
         std::cout<<"|"<<std::endl;
     }
 
+    printf("MaxScore is %d, in pos (%d,%d),length(%d,%d)\n",maxScore,posMX,posMY,lenX,lenY);
     localSubSequence(posMX,posMY,"","");
+
+
+    for(i=0; i<=lenX; i++)
+    {
+        for(j=0; j<=lenY; j++)
+        {
+            if(m_scoreMatrix[i][j].value==maxScore&&i!=posMX&&j!=posMY)
+            {
+                printf("MaxScore is %d, in pos (%d,%d),length(%d,%d)\n",maxScore,i,j,lenX,lenY);
+                localSubSequence(i,j,"","");
+            }
+        }
+    }
+
 
 }
 
@@ -786,6 +801,7 @@ void CNeedlemanWunsch::localSubSequence(int i,int j,std::string xSuffix,std::str
     {
         count=0;
         direction=m_scoreMatrix[i][j].direction;
+        std::cout<<"val:"<<m_scoreMatrix[i][j].value<<std::endl;
         x=i;
         y=j;
         xSuffix=xPrime;
@@ -804,7 +820,7 @@ void CNeedlemanWunsch::localSubSequence(int i,int j,std::string xSuffix,std::str
             count++;
             if(count>=2)
             {
-                bestSubSequence(x-1,y,m_sequenceX.at(x-1)+xSuffix,"-"+ySuffix);
+                localSubSequence(x-1,y,m_sequenceX.at(x-1)+xSuffix,"-"+ySuffix);
             }
             else
             {
@@ -820,7 +836,7 @@ void CNeedlemanWunsch::localSubSequence(int i,int j,std::string xSuffix,std::str
             count++;
             if(count>=2)
             {
-                bestSubSequence(x,y-1,"-"+xSuffix,m_sequenceY.at(y-1)+ySuffix);
+                localSubSequence(x,y-1,"-"+xSuffix,m_sequenceY.at(y-1)+ySuffix);
             }
             else
             {
