@@ -4,6 +4,9 @@
 #include <iostream>
 #include <math.h>
 
+#define DEBUG 1
+
+
 typedef std::multiset<int, std::less<int>,std::allocator<int> > set_type;
 
 inline std::ostream& operator<< (std::ostream& out,
@@ -70,7 +73,7 @@ void CDigest::DoPartialDigest(void)
 
 void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,std::string str)
 {
-#if 0
+#if DEBUG
     std::cout<<str<<"L="<<*L<<std::endl;
     std::cout<<str<<"X="<<*X<<std::endl;
 #endif /* Modify by Amos.zhu */
@@ -81,6 +84,7 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
     if(L->empty())
     {
         std::cout<<"Result: \n"<<*X<<std::endl;
+        printf("===================================!!!!\n");
         return;
     }
 
@@ -95,10 +99,10 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
     deltaRes=delta(X,ys);
     tempSet.clear();
     std::set_intersection(L->begin (), L->end (),deltaRes.begin (), deltaRes.end (),std::inserter(tempSet, tempSet.begin()));
-#if 0
+#if DEBUG
     std::cout<<str<<"ys="<<ys<<std::endl;
-    std::cout<<str<<"Before:Delta(X,ys)= "<<deltaRes<<std::endl;
-    std::cout<<str<<"Before:tempSet= "<<tempSet<<std::endl;
+    std::cout<<str<<"Delta(X,ys)= "<<deltaRes<<std::endl;
+    std::cout<<str<<"tempSet= "<<tempSet<<std::endl;
 #endif /* Modify by Amos.zhu */
     if(deltaRes==tempSet)
     {
@@ -112,12 +116,6 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
         /*
         *   Bug in union, use for loop
         */
-#if 0
-        tempSet.clear();
-        std::set_union(L->begin (), L->end (),deltaRes.begin (), deltaRes.end (),std::inserter(tempSet, tempSet.begin()));
-        *L=std::move(tempSet);
-#endif /* Modify by Amos.zhu */
-
         for(it=deltaRes.begin(); it!=deltaRes.end(); it++)
         {
             L->insert(*it);
@@ -127,14 +125,14 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
     /*
     *   Calculate from the original number
     */
-#if 0
+#if DEBUG
     std::cout<<str<<"L="<<*L<<std::endl;
     std::cout<<str<<"X="<<*X<<std::endl;
 #endif /* Modify by Amos.zhu */
     deltaRes=delta(X,y);
     tempSet.clear();
     std::set_intersection(L->begin (), L->end (),deltaRes.begin (), deltaRes.end (),std::inserter(tempSet, tempSet.begin()));
-#if 0
+#if DEBUG
     std::cout<<str<<"y="<<y<<std::endl;
     std::cout<<str<<"Delta(X,y)= "<<deltaRes<<std::endl;
     std::cout<<str<<"tempSet= "<<tempSet<<std::endl;
@@ -152,12 +150,6 @@ void CDigest::place(std::multiset <int> *L, std::multiset <int> *X, int maxNum,s
         /*
         *   Bug in union, use for loop
         */
-#if 0
-        tempSet.clear();
-        std::set_union(L->begin (), L->end (),deltaRes.begin (), deltaRes.end (),std::inserter(tempSet, tempSet.begin()));
-        *L=std::move(tempSet);
-#endif /* Modify by Amos.zhu */
-
         for(it=deltaRes.begin(); it!=deltaRes.end(); it++)
         {
             L->insert(*it);
